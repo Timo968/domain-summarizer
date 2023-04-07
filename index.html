@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="style.css">
   <title>Metadaten Extraktor</title>
 </head>
-<body>
+<body onload="askForApiKey()">
   <div class="container">
     <h1>Metadaten Extraktor</h1>
     <input type="text" id="url" placeholder="URL eingeben" onkeydown="handleEnterKey(event)">
@@ -15,9 +15,42 @@
   </div>
 
   <script>
+    let apiKey = '';
+
+    function askForApiKey() {
+      apiKey = prompt('Please enter your ChatGPT API key:');
+    }
+
     function handleEnterKey(event) {
       if (event.key === 'Enter') {
         fetchMetadata();
+      }
+    }
+
+    async function callChatGPT(messages) {
+      const url = 'https://api.openai.com/v1/chat/completions';
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      };
+
+      const body = JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: messages
+      });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: body
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices[0].message.content;
+      } else {
+        throw new Error('Error calling ChatGPT API');
       }
     }
 
@@ -41,12 +74,20 @@
         const descriptionMeta = htmlDoc.querySelector('meta[name="description"]');
         const description = descriptionMeta ? descriptionMeta.getAttribute('content') : 'Keine Beschreibung gefunden';
 
-        resultDiv.innerHTML = `
-          <h2>Titel:</h2>
-          <p>${title}</p>
-          <h2>Beschreibung:</h2>
-          <p>${description}</p>
-        `;
+        const messages = [
+          { role: 'system', content: 'summarize the following:' },
+          { role: 'user', content: `Title: ${title}\nDescription: ${description}` }
+        ];
+
+        try {
+          const summary = await callChatGPT(messages);
+          resultDiv.innerHTML = `
+            <h2>Zusammenfassung:</h2>
+            <p>${summary}</p>
+          `;
+        } catch (error) {
+          resultDiv.innerHTML = 'Fehler beim Abrufen der Zusammenfassung';
+        }
       } else {
         resultDiv.innerHTML = 'Fehler beim Abrufen der Metadaten';
       }
