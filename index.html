@@ -82,44 +82,55 @@
       }
     }
 
-    async function fetchMetadata() {
-      let url = document.getElementById('url').value;
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = '<div class="spinner"></div> loading...';
+async function fetchMetadata() {
+  let url = document.getElementById('url').value;
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = '<div class="spinner"></div> loading...';
 
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+
+  try {
+    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+
+    if (response.ok) {
+      const data = await response.json();
+      const parser = new DOMParser();
+      const htmlDoc = parser.parseFromString(data.contents, 'text/html');
+
+      if (!htmlDoc || !htmlDoc.querySelector) {
+        throw new Error('Invalid HTML content');
       }
 
-      const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+      const title = htmlDoc.querySelector('title').innerText;
+      const descriptionMeta = htmlDoc.querySelector('meta[name="description"]');
+      const description = descriptionMeta ? descriptionMeta.getAttribute('content') : 'Keine Beschreibung gefunden';
 
-      if (response.ok) {
-        const data = await response.json();
-        const parser = new DOMParser();
-        const htmlDoc = parser.parseFromString(data.contents, 'text/html');
-        
-        const title = htmlDoc.querySelector('title').innerText;
-        const descriptionMeta = htmlDoc.querySelector('meta[name="description"]');
-        const description = descriptionMeta ? descriptionMeta.getAttribute('content') : 'Keine Beschreibung gefunden';
+      const messages = [
+        { role: 'system', content: 'summarize the following:' },
+        { role: 'user', content: `Title: ${title}\nDescription: ${description}` }
+      ];
 
-        const messages = [
-          { role: 'system', content: 'summarize the following:' },
-          { role: 'user', content: `Title: ${title}\nDescription: ${description}` }
-        ];
-
-        try {
-          const summary = await callChatGPT(messages);
-          resultDiv.innerHTML = `
-            <h2>summary:</h2>
-            <p>${summary}</p>
-          `;
-        } catch (error) {
-          resultDiv.innerHTML = 'not able to summarize domain (error code 001)';
-        }
-      } else {
-        resultDiv.innerHTML = 'not able to summarize domain (error code 002)';
+      try {
+        const summary = await callChatGPT(messages);
+        resultDiv.innerHTML = `
+          <h2>summary:</h2>
+          <p>${summary}</p>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = 'not able to summarize domain (error code 001)';
       }
+    } else {
+      resultDiv.innerHTML = 'not able to summarize domain (error code 002)';
     }
+  } catch (error) {
+    resultDiv.innerHTML = 'not able to summarize domain (error code 003)';
+    console.error(error);
+  }
+}
+
+
   </script>
 </body>
 </html>
