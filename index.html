@@ -83,7 +83,7 @@
     async function fetchMetadata() {
       let url = document.getElementById('url').value;
       const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = '<div class="spinner"></div> Lade Metadaten...';
+      resultDiv.innerHTML = '<div class="spinner"></div> loading...';
 
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'https://' + url;
