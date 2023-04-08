@@ -108,14 +108,14 @@
         try {
           const summary = await callChatGPT(messages);
           resultDiv.innerHTML = `
-            <h2>Zusammenfassung:</h2>
+            <h2>summary:</h2>
             <p>${summary}</p>
           `;
         } catch (error) {
-          resultDiv.innerHTML = 'Fehler beim Abrufen der Zusammenfassung';
+          resultDiv.innerHTML = 'not able to summarize domain (error code 001)';
         }
       } else {
-        resultDiv.innerHTML = 'Fehler beim Abrufen der Metadaten';
+        resultDiv.innerHTML = 'not able to summarize domain (error code 002)';
       }
     }
   </script>
