@@ -12,7 +12,11 @@
     <input type="text" id="url" placeholder="enter domain" onkeydown="handleEnterKey(event)">
     <button onclick="fetchMetadata()">summarize domain</button>
     <div id="result"></div>
+
+    
   </div>
+
+
 
   <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="timotheuswiese" data-description="Support me on Buy me a coffee!" data-message="" data-color="#CC9900" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 
@@ -130,5 +134,23 @@ async function fetchMetadata() {
   }
 }
   </script>
+
+  <button onclick="deleteAllCookies()">Delete Cookies</button>
+
+  <script>
+    function deleteAllCookies() {
+      var cookies = document.cookie.split(";");
+    
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eqPos = cookie.indexOf("=");
+        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+    }
+    
+  </script>
+  
+
 </body>
 </html>
